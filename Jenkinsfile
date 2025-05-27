@@ -31,7 +31,7 @@ pipeline {
             steps {
                 echo "Deploy stage (placeholder) — insert Ansible or other deploy logic"
                 // Наприклад:
-                // sh 'ansible-playbook -i inventory playbook.yml'
+                // sh 'ansible-playbook -i inventory playbook.yml'.
             }
         }
     }
