@@ -18,7 +18,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Linting..."
-                    golangci-lint run --timeout 10m --verbose
+                    golangci-lint run --timeout 15m --verbose
                 '''
             }
         }
