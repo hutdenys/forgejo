@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_NAME = 'forgejo-devops'
+        USE_GOTESTSUM = 'yes'
+        PATH = "${PATH}:${HOME}/go/bin"
     }
 
     stages {
@@ -13,35 +14,40 @@ pipeline {
             }
         }
 
+        stage('Lint') {
+            steps {
+                sh '''
+                    echo "Linting..."
+                    golangci-lint run --timeout 5m
+                '''
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh '''
+                    echo "Running unit tests..."
+                    make test
+                '''
+            }
+        }
+
         stage('Build') {
             steps {
-                echo "Build stage (placeholder) — add your build commands here"
-                // Наприклад: sh 'make build'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo "Test stage (placeholder) — add your tests here"
-                // Наприклад: sh 'make test'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo "Deploy stage (placeholder) — insert Ansible or other deploy logic"
-                // Наприклад:
-                // sh 'ansible-playbook -i inventory playbook.yml'.
+                sh '''
+                    echo "Building Forgejo..."
+                    make build
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "Pipeline for ${env.PROJECT_NAME} completed successfully!"
+            echo 'Pipeline ends succesfully'
         }
         failure {
-            echo "Pipeline for ${env.PROJECT_NAME} failed."
+            echo 'Pipeline ends with errors.'
         }
     }
 }
