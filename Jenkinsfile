@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         USE_GOTESTSUM = 'yes'
-        PATH = "/usr/local/go/bin:${PATH}"
+        PATH = "/home/vagrant/go/bin:/usr/local/go/bin:$PATH"
     }
 
     stages {
