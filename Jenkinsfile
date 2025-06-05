@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         USE_GOTESTSUM = 'yes'
-        PATH = "${PATH}:${HOME}/go/bin"
         PATH = "/usr/local/go/bin:${PATH}"
     }
 
