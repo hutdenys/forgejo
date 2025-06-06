@@ -27,6 +27,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Running unit tests..."
+                    export CGO_ENABLED=1
                     make test
                 '''
             }
