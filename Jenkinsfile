@@ -29,15 +29,14 @@ pipeline {
                     echo "Running unit tests..."
                     export CGO_ENABLED=1
                     
-                    # Запустити heartbeat-процес у фоні
-                    while true; do echo ">> still running..."; sleep 60; done &
-
-                    HEARTBEAT_PID=$!
-
-                    make test
-
-                    # Завершити heartbeat після успішного виконання
-                    kill $HEARTBEAT_PID
+                    go test -v \
+                    ./build/... \
+                    ./cmd/... \
+                    ./models/... \
+                    ./modules/... \
+                    ./services/context/... \
+                    ./services/forms/... \
+                    ./tests/...
                 '''
             }
         }
