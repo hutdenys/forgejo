@@ -28,15 +28,19 @@ pipeline {
                 sh '''
                     echo "Running unit tests..."
                     export CGO_ENABLED=1
+                    export CODEBASE_TOKEN=skip
+                    export GOGS_READ_TOKEN=skip
+                    export SKIP_ELASTICSEARCH=1
                     
-                    go test -v \
-                    ./build/... \
-                    ./cmd/... \
-                    ./models/... \
-                    ./modules/... \
-                    ./services/context/... \
-                    ./services/forms/... \
-                    ./tests/...
+                    # Запустити heartbeat-процес у фоні
+                    while true; do echo ">> still running..."; sleep 60; done &
+
+                    HEARTBEAT_PID=$!
+
+                    make test
+
+                    # Завершити heartbeat після успішного виконання
+                    kill $HEARTBEAT_PID
                 '''
             }
         }
