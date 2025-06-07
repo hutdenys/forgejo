@@ -23,21 +23,18 @@ pipeline {
             }
         }
 
-        stage('Unit Tests') {
+        stage('Tests') {
             steps {
                 sh '''
-                    echo "Running unit tests..."
-                    export CGO_ENABLED=1
-                    export CODEBASE_TOKEN=skip
-                    export GOGS_READ_TOKEN=skip
-                    export SKIP_ELASTICSEARCH=1
+                    echo "Running tests..."
                     
                     # Запустити heartbeat-процес у фоні
                     while true; do echo ">> still running..."; sleep 60; done &
 
                     HEARTBEAT_PID=$!
 
-                    make test
+                    make test-frontend-coverage
+                    make test-backend
 
                     # Завершити heartbeat після успішного виконання
                     kill $HEARTBEAT_PID
