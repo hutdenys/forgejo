@@ -53,11 +53,13 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Pipeline ends succesfully'
-        }
-        failure {
-            echo 'Pipeline ends with errors.'
-        }
+      success {
+          echo 'Pipeline ends successfully'
+          archiveArtifacts artifacts: '**/build/**', fingerprint: true
+      }
+      failure {
+          echo 'Pipeline ends with errors.'
+      }
     }
+
 }
