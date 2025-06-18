@@ -14,6 +14,15 @@ pipeline {
             }
         }
 
+        stage('Dependencies') {
+            steps {
+                sh '''
+                    echo "Downloading Go dependencies..."
+                    go mod tidy
+                '''
+            }
+        }
+
         stage('Lint') {
             steps {
                 sh '''
@@ -53,13 +62,12 @@ pipeline {
     }
 
     post {
-      success {
-          echo 'Pipeline ends successfully'
-          archiveArtifacts artifacts: '**/build/**', fingerprint: true
-      }
-      failure {
-          echo 'Pipeline ends with errors.'
-      }
+        success {
+            echo 'Pipeline ends successfully'
+            archiveArtifacts artifacts: '**/build/**', fingerprint: true
+        }
+        failure {
+            echo 'Pipeline ends with errors.'
+        }
     }
-
 }
