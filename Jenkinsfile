@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         USE_GOTESTSUM = 'yes'
-        PATH = "/home/vagrant/go/bin:/usr/local/go/bin:$PATH"
+        PATH = "/usr/local/go/bin:$PATH"
     }
 
     stages {
@@ -37,16 +37,8 @@ pipeline {
                 sh '''
                     echo "Running tests..."
                     
-                    # Запустити heartbeat-процес у фоні
-                    while true; do echo ">> still running..."; sleep 60; done &
-
-                    HEARTBEAT_PID=$!
-
                     make test-frontend-coverage
-                    make test-backend || true
-
-                    # Завершити heartbeat після успішного виконання
-                    kill $HEARTBEAT_PID
+                    make test-backend
                 '''
             }
         }
@@ -55,7 +47,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Building Forgejo..."
-                    make build
+                    TAGS="bindata" make build
                 '''
             }
         }
