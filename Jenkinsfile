@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        USE_GOTESTSUM = 'yes'
+        USE_GOTESTSUM = 'no'
+        CGO_ENABLED = 1
         PATH = "/usr/local/go/bin:$PATH"
     }
 
