@@ -4,6 +4,10 @@ pipeline {
     environment {
         USE_GOTESTSUM = 'yes'
         PATH = "/usr/local/go/bin:$PATH"
+        AWS_REGION = 'eu-central-1'
+        AWS_ACCOUNT_ID = '535845769543'
+        ECR_REPO_NAME = 'forgejo'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -48,6 +52,30 @@ pipeline {
                 sh '''
                     echo "Building Forgejo..."
                     TAGS="bindata" make build
+                '''
+            }
+        }
+    }
+
+    stage('Docker Build & Push to ECR') {
+            environment {
+                AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+                AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+            }
+            steps {
+                sh '''
+                    echo "Logging into ECR..."
+                    aws ecr get-login-password --region $AWS_REGION | \
+                        docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+                    echo "Building Docker image..."
+                    docker build -t forgejo-app ./docker/forgejo
+
+                    echo "Tagging image for ECR..."
+                    docker tag forgejo-app:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG
+
+                    echo "Pushing image to ECR..."
+                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG
                 '''
             }
         }
