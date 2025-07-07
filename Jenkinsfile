@@ -99,7 +99,7 @@ pipeline {
     post {
         success {
             discordSend(
-              webhookURL: env.discord-webhook,
+              webhookURL: env.DISCORD_WEBHOOK,
               title: env.JOB_NAME,
               description: "SUCCESS: build #${env.BUILD_NUMBER}",
               link: env.BUILD_URL,
@@ -108,7 +108,7 @@ pipeline {
         }
         failure {
             discordSend(
-              webhookURL: env.discord-webhook,
+              webhookURL: env.DISCORD_WEBHOOK,
               title: env.JOB_NAME,
               description: "FAILED: build #${env.BUILD_NUMBER}",
               link: env.BUILD_URL,
