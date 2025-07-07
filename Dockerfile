@@ -10,15 +10,13 @@ RUN apk add --no-cache git openssh bash curl mariadb-client ca-certificates gett
 # Create user git
 RUN addgroup -g 1000 git && adduser -D -u 1000 -G git -s /bin/bash git
 
-# Download Forgejo
-ENV FORGEJO_VERSION=1.21.11-0
-RUN curl -L -o /usr/local/bin/forgejo \
-    https://codeberg.org/forgejo/forgejo/releases/download/v${FORGEJO_VERSION}/forgejo-${FORGEJO_VERSION}-linux-amd64 && \
-    chmod +x /usr/local/bin/forgejo
+# Copy builded application
+COPY ./gitea /usr/local/bin/forgejo
+RUN chmod +x /usr/local/bin/forgejo
 
 # Add entrypoint and template
-COPY entrypoint.sh /app/entrypoint.sh
-COPY templates /app/templates
+COPY ./docker/forgejo/entrypoint.sh /app/entrypoint.sh
+COPY ./docker/forgejo/templates /app/templates
 RUN chmod +x /app/entrypoint.sh
 
 RUN mkdir -p /data /app/gitea && chown -R git:git /data /app
