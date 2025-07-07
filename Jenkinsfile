@@ -6,7 +6,7 @@ pipeline {
         PATH = "/usr/local/go/bin:$PATH"
         AWS_REGION = 'eu-central-1'
         AWS_ACCOUNT_ID = '535845769543'
-        ECR_REPO_NAME = 'forgejo'
+        ECR_REPO_NAME = 'forgejo/app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
