@@ -98,11 +98,22 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline ends successfully'
-            archiveArtifacts artifacts: '**/build/**', fingerprint: true
+            discordSend(
+              webhookURL: env.discord-webhook,
+              title: env.JOB_NAME,
+              description: "SUCCESS: build #${env.BUILD_NUMBER}",
+              link: env.BUILD_URL,
+              result: 'SUCCESS'
+            )
         }
         failure {
-            echo 'Pipeline ends with errors.'
+            discordSend(
+              webhookURL: env.discord-webhook,
+              title: env.JOB_NAME,
+              description: "FAILED: build #${env.BUILD_NUMBER}",
+              link: env.BUILD_URL,
+              result: 'FAILURE'
+            )
         }
     }
 }
