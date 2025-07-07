@@ -48,20 +48,17 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            environment {
-                SONAR_PROJECT_KEY = 'forgejo'
-            }
             steps {
-                withSonarQubeEnv('sonarqube-local') {
-                    sh '''
-                        echo "Running SonarQube scanner..."
-                        sonar-scanner \
-                            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                            -Dsonar.sources=. \
-                            -Dsonar.go.coverage.reportPaths=coverage.out \
-                            -Dsonar.host.url=$SONAR_HOST_URL \
-                            -Dsonar.login=$SONAR_AUTH_TOKEN
-                    '''
+                script {
+                    def scannerHome = tool 'sonarscanner'
+                    withSonarQubeEnv() {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=forgejo \
+                                -Dsonar.sources=. \
+                                -Dsonar.go.coverage.reportPaths=coverage.out
+                        """
+                    }
                 }
             }
         }
