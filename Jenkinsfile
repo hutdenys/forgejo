@@ -84,7 +84,7 @@ pipeline {
                         docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
                     echo "Building Docker image..."
-                    docker build -t forgejo-app ./docker/forgejo
+                    docker build -t forgejo-app .
 
                     echo "Tagging image for ECR..."
                     docker tag forgejo-app:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG
