@@ -7,7 +7,7 @@ pipeline {
         AWS_REGION = 'eu-central-1'
         AWS_ACCOUNT_ID = '535845769543'
         ECR_REPO_NAME = 'forgejo/app'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        DISCORD_WEBHOOK = credentials('DISCORD_WEBHOOK')
     }
 
     stages {
@@ -27,37 +27,41 @@ pipeline {
             }
         }
 
-        stage('Lint') {
-            steps {
-                sh '''
-                    echo "Linting..."
-                    golangci-lint run --timeout 15m --verbose
-                '''
-            }
-        }
+        stage('Static Checks') {
+            parallel {
+                stage('Lint') {
+                    steps {
+                        sh '''
+                            echo "Running linter..."
+                            golangci-lint run --timeout 15m --verbose
+                        '''
+                    }
+                }
 
-        stage('Tests') {
-            steps {
-                sh '''
-                    echo "Running tests..."
-                    
-                    make test-frontend-coverage
-                    make test-backend || true
-                '''
-            }
-        }
+                stage('Tests') {
+                    steps {
+                        sh '''
+                            echo "Running tests..."
 
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    def scannerHome = tool 'sonarscanner'
-                    withSonarQubeEnv() {
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                                -Dsonar.projectKey=forgejo \
-                                -Dsonar.sources=. \
-                                -Dsonar.go.coverage.reportPaths=coverage.out
-                        """
+                            make test-frontend-coverage
+                            make test-backend || true
+                        '''
+                    }
+                }
+
+                stage('SonarQube Analysis') {
+                    steps {
+                        script {
+                            def scannerHome = tool 'sonarscanner'
+                            withSonarQubeEnv() {
+                                sh """
+                                    ${scannerHome}/bin/sonar-scanner \
+                                        -Dsonar.projectKey=forgejo \
+                                        -Dsonar.sources=. \
+                                        -Dsonar.go.coverage.reportPaths=coverage.out
+                                """
+                            }
+                        }
                     }
                 }
             }
@@ -69,6 +73,17 @@ pipeline {
                     echo "Building Forgejo..."
                     TAGS="bindata" make build
                 '''
+            }
+        }
+
+        stage('Init Tag Info') {
+            steps {
+                script {
+                    def branch = env.GIT_BRANCH?.replaceAll(/^origin\//, '')?.replaceAll('/', '-') ?: 'unknown'
+                    def shortCommit = env.GIT_COMMIT?.take(7) ?: '0000000'
+                    def timestamp = new Date(currentBuild.startTimeInMillis).format("yyyyMMdd-HHmm", TimeZone.getTimeZone('UTC'))
+                    env.IMAGE_TAG = "${branch}-${shortCommit}-${timestamp}"
+                }
             }
         }
 
@@ -88,9 +103,11 @@ pipeline {
 
                     echo "Tagging image for ECR..."
                     docker tag forgejo-app:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG
+                    docker tag forgejo-app:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
 
                     echo "Pushing image to ECR..."
                     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG
+                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
                 '''
             }
         }
@@ -98,11 +115,22 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline ends successfully'
-            archiveArtifacts artifacts: '**/build/**', fingerprint: true
+            discordSend(
+              webhookURL: env.DISCORD_WEBHOOK,
+              title: env.JOB_NAME,
+              description: "SUCCESS: build #${env.BUILD_NUMBER}",
+              link: env.BUILD_URL,
+              result: 'SUCCESS'
+            )
         }
         failure {
-            echo 'Pipeline ends with errors.'
+            discordSend(
+              webhookURL: env.DISCORD_WEBHOOK,
+              title: env.JOB_NAME,
+              description: "FAILED: build #${env.BUILD_NUMBER}",
+              link: env.BUILD_URL,
+              result: 'FAILURE'
+            )
         }
     }
 }
