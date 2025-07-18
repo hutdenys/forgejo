@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 ENV FORGEJO_DOMAIN=localhost \
-    FORGEJO_PORT=3000 \
+    FORGEJO_PORT=3000
 
 # Add dependencies
 RUN apk add --no-cache git openssh bash curl mariadb-client ca-certificates gettext
