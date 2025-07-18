@@ -2,7 +2,6 @@ FROM alpine:latest
 
 ENV FORGEJO_DOMAIN=localhost \
     FORGEJO_PORT=3000 \
-    FORGEJO_SSH_PORT=22
 
 # Add dependencies
 RUN apk add --no-cache git openssh bash curl mariadb-client ca-certificates gettext
@@ -19,11 +18,10 @@ COPY ./docker/forgejo/entrypoint.sh /app/entrypoint.sh
 COPY ./docker/forgejo/templates /app/templates
 RUN chmod +x /app/entrypoint.sh
 
-RUN mkdir -p /data /app/gitea && chown -R git:git /data /app
+RUN mkdir -p /app/gitea && chown -R git:git /app
 
 USER git
 WORKDIR /app/gitea
-VOLUME ["/data"]
-EXPOSE 3000 22
+EXPOSE 3000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
