@@ -14,7 +14,7 @@ SSL_MODE = disable
 LOG_SQL = false
 
 [repository]
-ROOT = /data/git/repositories
+ROOT = /git/repositories
 
 [server]
 SSH_DOMAIN = ${FORGEJO_DOMAIN}
@@ -30,7 +30,7 @@ OFFLINE_MODE = true
 START_SSH_SERVER = true
 
 [lfs]
-PATH = /data/lfs
+PATH = /lfs
 
 [mailer]
 ENABLED = false
@@ -60,7 +60,7 @@ PROVIDER = file
 [log]
 MODE = file
 LEVEL = info
-ROOT_PATH = /data/log
+ROOT_PATH = /log
 
 [repository.pull-request]
 DEFAULT_MERGE_STYLE = merge
