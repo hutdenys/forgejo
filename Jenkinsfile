@@ -8,6 +8,19 @@ pipeline {
         AWS_ACCOUNT_ID = '535845769543'
         ECR_REPO_NAME = 'forgejo/app'
         DISCORD_WEBHOOK = credentials('DISCORD_WEBHOOK')
+
+        DB_HOST = credentials('DB_HOST')
+        DB_PORT = 3306
+        DB_USER = credentials('DB_USER')
+        DB_PASS = credentials('DB_PASS')
+
+        FORGEJO_DOMAIN = 'forgejo.pp.ua'
+        FORGEJO_PORT = 3000
+        FORGEJO_SSH_PORT = 22
+                
+        FORGEJO_LFS_JWT_SECRET = credentials('FORGEJO_LFS_JWT_SECRET')
+        FORGEJO_INTERNAL_TOKEN = credentials('FORGEJO_INTERNAL_TOKEN')
+        FORGEJO_JWT_SECRET = credentials('FORGEJO_JWT_SECRET')
     }
 
     stages {
