@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'ec2-agent' }
 
     environment {
         USE_GOTESTSUM = 'yes'
