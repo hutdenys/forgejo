@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ec2-agent' }
+    agent { label 'aws-node' }
 
     environment {
         USE_GOTESTSUM = 'yes'
