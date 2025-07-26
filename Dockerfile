@@ -10,7 +10,7 @@ RUN apk add --no-cache git openssh bash curl mariadb-client ca-certificates gett
 RUN addgroup -g 1000 git && adduser -D -u 1000 -G git -s /bin/bash git
 
 # Copy builded application
-COPY ./gitea /usr/local/bin/forgejo
+COPY /home/ec2-user/jenkins/workspace/forgejo-ci_main/gitea /usr/local/bin/forgejo
 RUN chmod +x /usr/local/bin/forgejo
 
 # Add entrypoint and template
