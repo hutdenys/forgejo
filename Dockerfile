@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-ENV FORGEJO_DOMAIN=localhost \
+ENV FORGEJO_DOMAIN=forgejo.pp.ua \
     FORGEJO_PORT=3000
 
 # Add dependencies
