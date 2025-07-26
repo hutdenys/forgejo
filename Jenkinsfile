@@ -77,8 +77,9 @@ pipeline {
             steps {
                 sh '''
                     echo "Building Forgejo..."
-                    TAGS="bindata" make build
+                    make build
                 '''
+                    // TAGS="bindata" make build
             }
         }
 
