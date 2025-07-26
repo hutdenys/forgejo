@@ -24,4 +24,4 @@ USER git
 WORKDIR /app/gitea
 EXPOSE 3000
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+# ENTRYPOINT ["/app/entrypoint.sh"]
