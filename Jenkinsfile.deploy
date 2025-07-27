@@ -1,0 +1,164 @@
+pipeline {
+  agent { label 'docker' }
+
+  parameters {
+    choice(name: 'MODE', choices: ['promote', 'rollback'], description: 'Select action')
+    string(name: 'IMAGE_TAG', defaultValue: '', description: 'Tag to promote (required for promote)')
+  }
+
+  environment {
+    AWS_REGION      = "us-east-1"
+    ECR_URI         = "535845769543.dkr.ecr.us-east-1.amazonaws.com/forgejo/app"
+    REPO_NAME       = 'forgejo/app'
+    CLUSTER_NAME    = 'forgejo-cluster'
+    SERVICE_NAME    = 'forgejo'
+    DISCORD_WEBHOOK = credentials('DISCORD_WEBHOOK')
+
+    AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+  }
+
+  stages {
+    stage('Authenticate AWS CLI') {
+      steps {
+        sh """
+          echo "🔐 Logging in to AWS ECR..."
+          aws ecr get-login-password --region ${AWS_REGION} | \
+            docker login --username AWS --password-stdin ${ECR_URI}
+        """
+      }
+    }
+
+    stage('Promote or Rollback Image') {
+      steps {
+        script {
+          if (params.MODE == 'promote') {
+            if (!params.IMAGE_TAG?.trim()) {
+              error("❌ IMAGE_TAG must be specified for promotion")
+            }
+
+            def manifest = sh(
+              script: """
+                aws ecr batch-get-image \
+                  --repository-name ${REPO_NAME} \
+                  --image-ids imageTag=${params.IMAGE_TAG} \
+                  --query 'images[0].imageManifest' \
+                  --output text
+              """,
+              returnStdout: true
+            ).trim()
+
+            // Backup current prod
+            sh """
+              PROD_DIGEST=\$(aws ecr list-images \
+                --repository-name ${REPO_NAME} \
+                --filter tagStatus=TAGGED \
+                --query 'imageIds[?imageTag==\`prod\`].imageDigest' \
+                --output text)
+
+              if [ ! -z "\$PROD_DIGEST" ]; then
+                BACKUP_TAG="prod-backup-\$(date +%Y%m%d%H%M%S)"
+                echo "🧷 Backing up prod to \$BACKUP_TAG"
+                aws ecr put-image \
+                  --repository-name ${REPO_NAME} \
+                  --image-tag \$BACKUP_TAG \
+                  --image-manifest "\$(aws ecr batch-get-image \
+                    --repository-name ${REPO_NAME} \
+                    --image-ids imageDigest=\$PROD_DIGEST \
+                    --query 'images[0].imageManifest' \
+                    --output text)"
+              else
+                echo "ℹ️ No existing prod image to back up"
+              fi
+            """
+
+            // Promote to prod
+            sh """
+              echo "🚀 Promoting ${params.IMAGE_TAG} → prod"
+              aws ecr put-image \
+                --repository-name ${REPO_NAME} \
+                --image-tag prod \
+                --image-manifest '${manifest}'
+            """
+          }
+
+          if (params.MODE == 'rollback') {
+            def latestBackup = sh(
+              script: """
+                aws ecr list-images \
+                  --repository-name ${REPO_NAME} \
+                  --filter tagStatus=TAGGED \
+                  --query 'imageIds[?starts_with(imageTag, \`prod-backup\`)].imageTag' \
+                  --output text | tr '\\t' '\\n' | sort -r | head -n1
+              """,
+              returnStdout: true
+            ).trim()
+
+            if (!latestBackup) {
+              error("❌ No backup tag found. Rollback aborted.")
+            }
+
+            def rollbackManifest = sh(
+              script: """
+                aws ecr batch-get-image \
+                  --repository-name ${REPO_NAME} \
+                  --image-ids imageTag=${latestBackup} \
+                  --query 'images[0].imageManifest' \
+                  --output text
+              """,
+              returnStdout: true
+            ).trim()
+
+            // Rollback
+            sh """
+              echo "🔁 Rolling back prod to ${latestBackup}"
+              aws ecr put-image \
+                --repository-name ${REPO_NAME} \
+                --image-tag prod \
+                --image-manifest '${rollbackManifest}'
+            """
+          }
+        }
+      }
+    }
+
+    stage('Trigger ECS Redeploy') {
+      steps {
+        sh """
+          echo "🔄 Triggering ECS service update..."
+          aws ecs update-service \
+            --cluster ${CLUSTER_NAME} \
+            --service ${SERVICE_NAME} \
+            --force-new-deployment
+        """
+      }
+    }
+  }
+
+  post {
+    success {
+      script {
+        def msg = (params.MODE == 'promote') ?
+          "✅ Promoted `${params.IMAGE_TAG}` → `prod`" :
+          "✅ Rollback successful: `prod-backup-*` → `prod`"
+
+        discordSend(
+          webhookURL: DISCORD_WEBHOOK,
+          title: JOB_NAME,
+          description: msg,
+          link: BUILD_URL,
+          result: 'SUCCESS'
+        )
+      }
+    }
+    failure {
+      discordSend(
+        webhookURL: DISCORD_WEBHOOK,
+        title: JOB_NAME,
+        description: "❌ Operation `${params.MODE}` failed",
+        link: BUILD_URL,
+        result: 'FAILURE'
+      )
+    }
+  }
+}
