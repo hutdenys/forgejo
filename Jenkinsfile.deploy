@@ -53,7 +53,7 @@ pipeline {
               PROD_DIGEST=\$(aws ecr list-images \
                 --repository-name ${REPO_NAME} \
                 --filter tagStatus=TAGGED \
-                --query 'imageIds[?imageTag==\`prod\`].imageDigest' \
+                --query "imageIds[?imageTag=='prod'].imageDigest" \
                 --output text)
 
               if [ ! -z "\$PROD_DIGEST" ]; then
@@ -88,7 +88,7 @@ pipeline {
                 aws ecr list-images \
                   --repository-name ${REPO_NAME} \
                   --filter tagStatus=TAGGED \
-                  --query 'imageIds[?starts_with(imageTag, \`prod-backup\`)].imageTag' \
+                  --query "imageIds[?starts_with(imageTag, 'prod-backup')].imageTag" \
                   --output text | tr '\\t' '\\n' | sort -r | head -n1
               """,
               returnStdout: true
