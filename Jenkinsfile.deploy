@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'docker' }
+  agent { label 'aws-node' }
 
   parameters {
     choice(name: 'MODE', choices: ['promote', 'rollback'], description: 'Select action')
