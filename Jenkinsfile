@@ -33,27 +33,27 @@ pipeline {
             }
         }
 
-        // stage('Static Checks') {
-        //     parallel {
-        //         stage('Lint') {
-        //             steps {
-        //                 sh '''
-        //                     echo "Running linter..."
-        //                     golangci-lint run --timeout 15m --verbose
-        //                 '''
-        //             }
-        //         }
+        stage('Static Checks') {
+            parallel {
+                stage('Lint') {
+                    steps {
+                        sh '''
+                            echo "Running linter..."
+                            golangci-lint run --timeout 15m --verbose
+                        '''
+                    }
+                }
 
-        //         stage('Tests') {
-        //             steps {
-        //                 sh '''
-        //                     echo "Running tests..."
+                stage('Tests') {
+                    steps {
+                        sh '''
+                            echo "Running tests..."
 
-        //                     make test-frontend-coverage
-        //                     make test-backend || true
-        //                 '''
-        //             }
-        //         }
+                            make test-frontend-coverage
+                            make test-backend || true
+                        '''
+                    }
+                }
 
         //         stage('SonarQube Analysis') {
         //             steps {
@@ -70,8 +70,8 @@ pipeline {
         //                 }
         //             }
         //         }
-        //     }
-        // }
+            }
+        }
 
         stage('Build') {
             steps {
