@@ -5,7 +5,7 @@ pipeline {
         USE_GOTESTSUM = 'yes'
         PATH = "/usr/local/go/bin:$PATH"
         AWS_REGION = 'us-east-1'
-        AWS_ACCOUNT_ID = '535845769543'
+        AWS_ACCOUNT_ID = '635670595114'
         ECR_REPO_NAME = 'forgejo/app'
         DISCORD_WEBHOOK = credentials('DISCORD_WEBHOOK')
 
