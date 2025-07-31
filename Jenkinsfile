@@ -24,6 +24,17 @@ pipeline {
     }
 
     stages {
+        stage('SonarQube analysis') {
+            steps {
+                script {
+                    scannerHome = tool '<SonarScanner>'
+                }
+                withSonarQubeEnv('SonarQube Cloud') {
+                    sh "${scannerHome}/bin/sonar-scanner"
+                }
+            }
+        }
+      
         stage('Dependencies') {
             steps {
                 sh '''
@@ -75,16 +86,6 @@ pipeline {
             }
         }
 
-        stage('SonarQube analysis') {
-            steps {
-                script {
-                    scannerHome = tool '<sonar>'
-                }
-                withSonarQubeEnv('SonarQube Cloud') {
-                    sh "${scannerHome}/bin/sonar-scanner"
-                }
-            }
-        }
       
         stage('Build') {
             steps {
