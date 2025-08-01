@@ -18,7 +18,7 @@ COPY ./docker/forgejo/entrypoint.sh /app/entrypoint.sh
 COPY ./docker/forgejo/templates /app/templates
 RUN chmod +x /app/entrypoint.sh
 
-RUN mkdir -p /app/gitea && chown -R git:git /app
+RUN mkdir -p /data /app/gitea && chown -R git:git /data /app
 
 USER git
 WORKDIR /app/gitea
