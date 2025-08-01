@@ -91,7 +91,8 @@ pipeline {
             steps {
                 sh '''
                     echo "Building Forgejo..."
-                    CGO_ENABLED=0 TAGS="bindata" VERSION=1.22.0 make build
+                    make clean
+                    CGO_ENABLED=0 TAGS="bindata" FORGEJO_VERSION=1.22.0 make build
                 '''
             }
         }
