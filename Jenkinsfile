@@ -34,58 +34,42 @@ pipeline {
             }
         }
 
-        // stage('Static Checks') {
-        //     parallel {
-                // stage('Lint') {
-                //     steps {
-                //         sh '''
-                //             echo "Running linter..."
-                //             golangci-lint run --timeout 15m --verbose
-                //         '''
-                //     }
-                // }
+        stage('Static Checks') {
+            parallel {
+                stage('Lint') {
+                    steps {
+                        sh '''
+                            echo "Running linter..."
+                            golangci-lint run --timeout 15m --verbose
+                        '''
+                    }
+                }
 
-                
+                stage('Tests') {
+                    steps {
+                        sh '''
+                            echo "Running tests..."
 
-        //         stage('SonarQube Analysis') {
-        //             steps {
-        //                 script {
-        //                     def scannerHome = tool 'sonarscanner'
-        //                     withSonarQubeEnv() {
-        //                         sh """
-        //                             ${scannerHome}/bin/sonar-scanner \
-        //                                 -Dsonar.projectKey=forgejo \
-        //                                 -Dsonar.sources=. \
-        //                                 -Dsonar.go.coverage.reportPaths=coverage.out
-        //                         """
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+                            make test-frontend-coverage
+                            make test-backend || true
+                        '''
+                    }
+                }
 
-        // stage('Tests') {
-        //     steps {
-        //         sh '''
-        //             echo "Running tests..."
+                stage('SonarQube analysis') {
+                    steps {
+                        script {
+                            scannerHome = tool 'SonarScanner'
+                        }
+                        withSonarQubeEnv('SonarQube Cloud') {
+                            sh "${scannerHome}/bin/sonar-scanner"
+                        }
+                    }
+                }
+              
+            }
+        }
 
-        //             make test-frontend-coverage
-        //             make test-backend || true
-        //         '''
-        //     }
-        // }
-
-        // stage('SonarQube analysis') {
-        //     steps {
-        //         script {
-        //             scannerHome = tool 'SonarScanner'
-        //         }
-        //         withSonarQubeEnv('SonarQube Cloud') {
-        //             sh "${scannerHome}/bin/sonar-scanner"
-        //         }
-        //     }
-        // }
       
         stage('Build') {
             steps {
