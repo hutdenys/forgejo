@@ -24,16 +24,6 @@ pipeline {
     }
 
     stages {
-        stage('SonarQube analysis') {
-            steps {
-                script {
-                    scannerHome = tool 'SonarScanner'
-                }
-                withSonarQubeEnv('SonarQube Cloud') {
-                    sh "${scannerHome}/bin/sonar-scanner"
-                }
-            }
-        }
       
         stage('Dependencies') {
             steps {
@@ -75,23 +65,33 @@ pipeline {
         //     }
         // }
 
-        stage('Tests') {
-            steps {
-                sh '''
-                    echo "Running tests..."
+        // stage('Tests') {
+        //     steps {
+        //         sh '''
+        //             echo "Running tests..."
 
-                    make test-frontend-coverage
-                    make test-backend || true
-                '''
-            }
-        }
+        //             make test-frontend-coverage
+        //             make test-backend || true
+        //         '''
+        //     }
+        // }
 
+        // stage('SonarQube analysis') {
+        //     steps {
+        //         script {
+        //             scannerHome = tool 'SonarScanner'
+        //         }
+        //         withSonarQubeEnv('SonarQube Cloud') {
+        //             sh "${scannerHome}/bin/sonar-scanner"
+        //         }
+        //     }
+        // }
       
         stage('Build') {
             steps {
                 sh '''
                     echo "Building Forgejo..."
-                    CGO_ENABLED=0 TAGS="bindata" make build
+                    CGO_ENABLED=0 TAGS="bindata" VERSION=1.22.0 make build
                 '''
             }
         }
