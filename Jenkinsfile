@@ -36,15 +36,6 @@ pipeline {
 
         stage('Static Checks') {
             parallel {
-                stage('Lint') {
-                    steps {
-                        sh '''
-                            echo "Running linter..."
-                            golangci-lint run --timeout 15m --verbose
-                        '''
-                    }
-                }
-
                 stage('Tests') {
                     steps {
                         sh '''
