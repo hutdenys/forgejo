@@ -35,6 +35,9 @@ PATH = /lfs
 [mailer]
 ENABLED = false
 
+[metrics]
+ENABLED = true
+
 [service]
 REGISTER_EMAIL_CONFIRM = false
 ENABLE_NOTIFY_MAIL = false
