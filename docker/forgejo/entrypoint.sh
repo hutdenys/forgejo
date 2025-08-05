@@ -15,5 +15,16 @@ if [ ! -f "$APP_INI" ]; then
   chown git:git "$APP_INI"
 fi
 
+# Check if custom app.ini exists and add metrics section if needed
+CUSTOM_APP_INI="/data/custom/conf/app.ini"
+if [ -f "$CUSTOM_APP_INI" ]; then
+  if ! grep -q "^\[metrics\]" "$CUSTOM_APP_INI"; then
+    echo "Adding [metrics] section to custom app.ini..."
+    echo "" >> "$CUSTOM_APP_INI"
+    echo "[metrics]" >> "$CUSTOM_APP_INI"
+    echo "ENABLED = true" >> "$CUSTOM_APP_INI"
+  fi
+fi
+
 # Launch Forgejo
 exec /usr/local/bin/forgejo --work-path "$APP_DATA_PATH" web
