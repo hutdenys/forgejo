@@ -31,7 +31,6 @@ pipeline {
                 sh '''
                     echo "Downloading dependencies..."
                     go mod tidy
-                    curl -L https://github.com/signalfx/splunk-otel-collector/releases/download/v0.130.0/splunk-otel-collector_0.130.0_amd64.tar.gz -o ./otelcol.tar.gz
                 '''
             }
         }
