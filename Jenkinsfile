@@ -21,6 +21,7 @@ pipeline {
         FORGEJO_LFS_JWT_SECRET = credentials('FORGEJO_LFS_JWT_SECRET')
         FORGEJO_INTERNAL_TOKEN = credentials('FORGEJO_INTERNAL_TOKEN')
         FORGEJO_JWT_SECRET = credentials('FORGEJO_JWT_SECRET')
+        SPLUNK_ACCESS_TOKEN = credentials('SPLUNK_ACCESS_TOKEN')
     }
 
     stages {
