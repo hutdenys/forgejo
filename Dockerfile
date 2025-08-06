@@ -14,9 +14,10 @@ RUN chmod +x /usr/local/bin/forgejo
 ENV SPLUNK_ACCESS_TOKEN=${SPLUNK_ACCESS_TOKEN}
 
 # Add splunk-otel-collector    
-RUN mkdir -p /otel && \
-    curl -L https://github.com/signalfx/splunk-otel-collector/releases/download/v0.130.0/splunk-otel-collector_0.130.0_amd64.tar.gz -o /otel/otelcol.tar.gz && \
-    tar -xzf /otel/otelcol.tar.gz -C /otel && \
+RUN mkdir -p /otel
+
+RUN curl -L https://github.com/signalfx/splunk-otel-collector/releases/download/v0.130.0/splunk-otel-collector_0.130.0_amd64.tar.gz -o /otel/otelcol.tar.gz
+RUN tar -xzf /otel/otelcol.tar.gz -C /otel && \
     chmod +x /otel/splunk-otel-collector/bin/otelcol && \
     rm /otel/otelcol.tar.gz
 
