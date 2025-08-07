@@ -17,7 +17,6 @@ pipeline {
 
         FORGEJO_DOMAIN = 'forgejo.pp.ua'
         FORGEJO_PORT = 3000
-        FORGEJO_SSH_PORT = 22
                 
         FORGEJO_LFS_JWT_SECRET = credentials('FORGEJO_LFS_JWT_SECRET')
         FORGEJO_INTERNAL_TOKEN = credentials('FORGEJO_INTERNAL_TOKEN')
@@ -106,7 +105,6 @@ pipeline {
                         --build-arg DB_NAME="$DB_NAME" \
                         --build-arg FORGEJO_DOMAIN="$FORGEJO_DOMAIN" \
                         --build-arg FORGEJO_PORT="$FORGEJO_PORT" \
-                        --build-arg FORGEJO_SSH_PORT="$FORGEJO_SSH_PORT" \
                         --build-arg FORGEJO_LFS_JWT_SECRET="$FORGEJO_LFS_JWT_SECRET" \
                         --build-arg FORGEJO_INTERNAL_TOKEN="$FORGEJO_INTERNAL_TOKEN" \
                         --build-arg FORGEJO_JWT_SECRET="$FORGEJO_JWT_SECRET" \
