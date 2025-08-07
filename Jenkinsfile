@@ -13,6 +13,7 @@ pipeline {
         DB_PORT = 3306
         DB_USER = credentials('DB_USER')
         DB_PASS = credentials('DB_PASS')
+        DB_NAME = 'forgejo'
 
         FORGEJO_DOMAIN = 'forgejo.pp.ua'
         FORGEJO_PORT = 3000
@@ -95,8 +96,21 @@ pipeline {
                     aws ecr get-login-password --region $AWS_REGION | \
                         docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-                    echo "Building Docker image..."
-                    docker build -t forgejo-app .
+                    echo "Building Docker image with build args..."
+                    docker build -t forgejo-app \
+                        --build-arg SPLUNK_ACCESS_TOKEN="$SPLUNK_ACCESS_TOKEN" \
+                        --build-arg DB_HOST="$DB_HOST" \
+                        --build-arg DB_PORT="$DB_PORT" \
+                        --build-arg DB_USER="$DB_USER" \
+                        --build-arg DB_PASS="$DB_PASS" \
+                        --build-arg DB_NAME="$DB_NAME" \
+                        --build-arg FORGEJO_DOMAIN="$FORGEJO_DOMAIN" \
+                        --build-arg FORGEJO_PORT="$FORGEJO_PORT" \
+                        --build-arg FORGEJO_SSH_PORT="$FORGEJO_SSH_PORT" \
+                        --build-arg FORGEJO_LFS_JWT_SECRET="$FORGEJO_LFS_JWT_SECRET" \
+                        --build-arg FORGEJO_INTERNAL_TOKEN="$FORGEJO_INTERNAL_TOKEN" \
+                        --build-arg FORGEJO_JWT_SECRET="$FORGEJO_JWT_SECRET" \
+                        .
 
                     echo "Tagging image for ECR..."
                     docker tag forgejo-app:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG

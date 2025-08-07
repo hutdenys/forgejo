@@ -14,6 +14,20 @@ RUN apk add --no-cache curl tar && \
 ### Stage 2: Final image
 FROM alpine:latest
 
+# Build arguments for environment variables (combined for clarity)
+ARG SPLUNK_ACCESS_TOKEN \
+    DB_HOST \
+    DB_PORT=3306 \
+    DB_USER \
+    DB_PASS \
+    DB_NAME=forgejo \
+    FORGEJO_DOMAIN \
+    FORGEJO_PORT=3000 \
+    FORGEJO_SSH_PORT=22 \
+    FORGEJO_LFS_JWT_SECRET \
+    FORGEJO_INTERNAL_TOKEN \
+    FORGEJO_JWT_SECRET
+
 # Add dependencies (combined in single layer)
 RUN apk add --no-cache --virtual .runtime-deps \
     git \
@@ -41,8 +55,19 @@ COPY ./docker/forgejo/templates /app/templates
 RUN chmod +x /usr/local/bin/forgejo /app/entrypoint.sh /otel/splunk-otel-collector/bin/otelcol && \
     chown -R git:git /otel
 
-# Splunk env
-ENV SPLUNK_ACCESS_TOKEN=${SPLUNK_ACCESS_TOKEN}
+# Environment variables for runtime (combined in single layer)
+ENV SPLUNK_ACCESS_TOKEN=${SPLUNK_ACCESS_TOKEN} \
+    DB_HOST=${DB_HOST} \
+    DB_PORT=${DB_PORT} \
+    DB_USER=${DB_USER} \
+    DB_PASS=${DB_PASS} \
+    DB_NAME=${DB_NAME} \
+    FORGEJO_DOMAIN=${FORGEJO_DOMAIN} \
+    FORGEJO_PORT=${FORGEJO_PORT} \
+    FORGEJO_SSH_PORT=${FORGEJO_SSH_PORT} \
+    FORGEJO_LFS_JWT_SECRET=${FORGEJO_LFS_JWT_SECRET} \
+    FORGEJO_INTERNAL_TOKEN=${FORGEJO_INTERNAL_TOKEN} \
+    FORGEJO_JWT_SECRET=${FORGEJO_JWT_SECRET}
 
 # Runtime config
 USER git
