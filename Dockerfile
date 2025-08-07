@@ -1,46 +1,45 @@
 ### Stage 1: Forgejo & OTEL Downloader
 FROM alpine:latest AS downloader
 
-RUN apk add --no-cache curl tar
-
-# ENV for versions
-ENV FORGEJO_VERSION=1.21.11-0 \
-    OTEL_VERSION=
-
-# Download and extract Splunk OTEL Collector
-RUN curl -L https://github.com/signalfx/splunk-otel-collector/releases/download/v0.130.0/splunk-otel-collector_0.130.0_amd64.tar.gz \
+# Download and extract Splunk OTEL Collector in single layer
+RUN apk add --no-cache curl tar && \
+    curl -L https://github.com/signalfx/splunk-otel-collector/releases/download/v0.130.0/splunk-otel-collector_0.130.0_amd64.tar.gz \
     -o /otelcol.tar.gz && \
     mkdir -p /otel && \
     tar -xzf /otelcol.tar.gz -C /otel && \
     chmod +x /otel/splunk-otel-collector/bin/otelcol && \
-    rm /otelcol.tar.gz
+    rm /otelcol.tar.gz && \
+    apk del curl tar
 
 ### Stage 2: Final image
 FROM alpine:latest
 
-# Add dependencies
-RUN apk add --no-cache git openssh bash curl mariadb-client ca-certificates gettext
+# Add dependencies (combined in single layer)
+RUN apk add --no-cache --virtual .runtime-deps \
+    git \
+    openssh \
+    bash \
+    curl \
+    mariadb-client \
+    ca-certificates \
+    gettext
 
-# Create git user
-RUN addgroup -g 1000 git && adduser -D -u 1000 -G git -s /bin/bash git
+# Create git user and setup directories
+RUN addgroup -g 1000 git && \
+    adduser -D -u 1000 -G git -s /bin/bash git && \
+    mkdir -p /data /app/gitea && \
+    chown -R git:git /data /app
 
-# Copy builded application
+# Copy and setup application files
 COPY ./gitea /usr/local/bin/forgejo
-RUN chmod +x /usr/local/bin/forgejo
-
-# Copy Splunk OTEL
 COPY --from=downloader /otel /otel
-
-# Add entrypoint and templates
 COPY ./docker/forgejo/otel-config.yaml /otel/config.yaml
 COPY ./docker/forgejo/entrypoint.sh /app/entrypoint.sh
 COPY ./docker/forgejo/templates /app/templates
-RUN chmod +x /app/entrypoint.sh
 
-# Set permissions
-RUN chmod +x /usr/local/bin/forgejo /app/entrypoint.sh && \
-    mkdir -p /data /app/gitea && \
-    chown -R git:git /data /app /otel
+# Set all permissions in one layer
+RUN chmod +x /usr/local/bin/forgejo /app/entrypoint.sh /otel/splunk-otel-collector/bin/otelcol && \
+    chown -R git:git /otel
 
 # Splunk env
 ENV SPLUNK_ACCESS_TOKEN=${SPLUNK_ACCESS_TOKEN}
