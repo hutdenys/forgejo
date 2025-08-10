@@ -16,7 +16,7 @@ pipeline {
         DB_NAME = 'forgejo'
 
         FORGEJO_DOMAIN = 'forgejo.pp.ua'
-        FORGEJO_PORT = 443
+        FORGEJO_PORT = 3000
                 
         FORGEJO_LFS_JWT_SECRET = credentials('FORGEJO_LFS_JWT_SECRET')
         FORGEJO_INTERNAL_TOKEN = credentials('FORGEJO_INTERNAL_TOKEN')
