@@ -35,32 +35,32 @@ pipeline {
             }
         }
 
-        // stage('Static Checks') {
-        //     parallel {
-        //         stage('Tests') {
-        //             steps {
-        //                 sh '''
-        //                     echo "Running tests..."
+        stage('Static Checks') {
+            parallel {
+                stage('Tests') {
+                    steps {
+                        sh '''
+                            echo "Running tests..."
 
-        //                     make test-frontend-coverage
-        //                     make test-backend || true
-        //                 '''
-        //             }
-        //         }
+                            make test-frontend-coverage
+                            make test-backend || true
+                        '''
+                    }
+                }
 
-        //         stage('SonarQube analysis') {
-        //             steps {
-        //                 script {
-        //                     scannerHome = tool 'SonarScanner'
-        //                 }
-        //                 withSonarQubeEnv('SonarQube Cloud') {
-        //                     sh "${scannerHome}/bin/sonar-scanner"
-        //                 }
-        //             }
-        //         }
+                stage('SonarQube analysis') {
+                    steps {
+                        script {
+                            scannerHome = tool 'SonarScanner'
+                        }
+                        withSonarQubeEnv('SonarQube Cloud') {
+                            sh "${scannerHome}/bin/sonar-scanner"
+                        }
+                    }
+                }
               
-        //     }
-        // }
+            }
+        }
 
       
         stage('Build') {
